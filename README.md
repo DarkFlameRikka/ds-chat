@@ -30,12 +30,18 @@
 |---|---|
 | ![教程](docs/shots/09-api-key-guide.png) | ![侧边栏](docs/shots/10-sidebar.png) |
 
+| 代码高亮 + LaTeX 公式 | 检查更新 |
+|---|---|
+| ![渲染](docs/shots/12-syntax-math.png) | ![检查更新](docs/shots/11-check-update.png) |
+
 ---
 
 ## 功能
 
 **对话**
-- 流式输出、Markdown（标题/列表/引用/表格）、代码块（横向滚动 + 一键复制）
+- 流式输出、Markdown（标题/列表/引用/分割线）
+- 代码块：**语法高亮**（Kotlin/Java/Python/JS/TS/Bash/SQL/C/C++/Go/Rust/JSON/YAML 等），横向滚动 + 一键复制
+- **LaTeX 公式**：行内 `$...$` 与块级 `$$...$$` 渲染（jlatexmath），失败自动回退源码
 - 停止生成、重新生成、复制、点赞/点踩、分享、朗读
 - 长按提问可「修改」后重新生成（截断该轮之后的消息）
 
@@ -112,7 +118,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 - 无账号体系、无多端同步；数据只存在本机
 - 联网搜索 / 语音 / 文件解析走开放 API，会按次/按时长计费，请注意余额
-- 代码块暂不做语法高亮，LaTeX 公式不渲染
+- 公式渲染依赖 jlatexmath（GPLv2），本仓库源码公开以符合其分发要求；复杂宏包（如 tikz、amsmath 的部分环境）不支持
 - 历史导入支持官方导出格式 `export_format_version = 3`；消息分支、编辑历史等不回放
 - 缓存命中率在短对话下常为 0.0%（服务端缓存有最小前缀粒度）
 
