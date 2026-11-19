@@ -1,0 +1,2 @@
+-keepattributes Signature
+-keep class com.deepseekclone.app.data.model.** { *; }
