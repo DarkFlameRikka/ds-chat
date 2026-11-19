@@ -20,6 +20,8 @@ class AppContainer(context: Context) {
 
     val historyImporter = com.deepseekclone.app.data.history.HistoryImporter(appContext, conversationStore)
 
+    val updateChecker = com.deepseekclone.app.data.update.UpdateChecker()
+
     val chatClient: ChatEngine = DeepSeekClient(
         apiKeyProvider = { settingsRepository.apiKeyFirst() },
         baseUrlProvider = { settingsRepository.baseUrlFirst() },

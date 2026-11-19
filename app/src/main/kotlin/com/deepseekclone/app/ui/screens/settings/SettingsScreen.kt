@@ -65,7 +65,12 @@ fun SettingsScreen(
     container: com.deepseekclone.app.data.AppContainer? = null,
 ) {
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var showImportGuide by remember { mutableStateOf(false) }
+    var checkingUpdate by remember { mutableStateOf(false) }
+    var updateResult by remember { mutableStateOf<com.deepseekclone.app.data.update.UpdateInfo?>(null) }
+    var updateError by remember { mutableStateOf<String?>(null) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
     var importing by remember { mutableStateOf(false) }
     var importMessage by remember { mutableStateOf<String?>(null) }
     val importPicker = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -228,7 +233,24 @@ fun SettingsScreen(
                     icon = Icons.Outlined.Info,
                     title = Zh.checkUpdate,
                     value = BuildConfig.VERSION_NAME,
-                    onClick = { },
+                    onClick = {
+                        val checker = container?.updateChecker
+                        if (checker == null) {
+                            updateError = "当前环境不支持检查更新"
+                            showUpdateDialog = true
+                            return@SettingRow
+                        }
+                        showUpdateDialog = true
+                        checkingUpdate = true
+                        updateResult = null
+                        updateError = null
+                        scope.launch {
+                            runCatching { checker.check() }
+                                .onSuccess { updateResult = it }
+                                .onFailure { updateError = it.message ?: Zh.networkError }
+                            checkingUpdate = false
+                        }
+                    },
                 )
                 RowDivider()
                 SettingRow(
@@ -266,6 +288,64 @@ fun SettingsScreen(
             onPick = { key ->
                 scope.launch { settings.setTtsVoice(key) }
                 showVoice = false
+            },
+        )
+    }
+
+    if (showUpdateDialog) {
+        val info = updateResult
+        AlertDialog(
+            onDismissRequest = { showUpdateDialog = false },
+            title = { Text(Zh.checkUpdate) },
+            text = {
+                when {
+                    checkingUpdate -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text("正在检查更新…")
+                    }
+
+                    updateError != null -> Text(updateError!!)
+
+                    info != null && !info.hasUpdate -> Text(
+                        "当前已是最新版本\n\n当前版本：${info.currentVersion}\n最新版本：v${info.latestVersion}",
+                    )
+
+                    info != null -> Text(
+                        "发现新版本 v${info.latestVersion}（当前 ${info.currentVersion}）" +
+                            if (info.notes.isNotBlank()) "\n\n${info.notes.take(400)}" else "",
+                    )
+
+                    else -> Text("暂无更新信息")
+                }
+            },
+            confirmButton = {
+                val openUrl: (String) -> Unit = { url ->
+                    runCatching {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse(url),
+                        )
+                        context.startActivity(intent)
+                    }
+                }
+                when {
+                    info != null && info.hasUpdate -> TextButton(onClick = {
+                        showUpdateDialog = false
+                        openUrl(info.releaseUrl)
+                    }) { Text("前往下载") }
+
+                    else -> TextButton(onClick = { showUpdateDialog = false }) { Text("知道了") }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showUpdateDialog = false
+                    checkingUpdate = false
+                }) { Text(Zh.cancel) }
             },
         )
     }
