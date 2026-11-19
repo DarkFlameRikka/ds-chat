@@ -74,7 +74,7 @@ class UpdateChecker(
         )
     }
 
-    private fun compareVersion(a: String, b: String): Int {
+    internal fun compareVersion(a: String, b: String): Int {
         fun parts(v: String) = v.split('.', '-', '+')
             .map { it.filter(Char::isDigit).toIntOrNull() ?: 0 }
         val pa = parts(a)
