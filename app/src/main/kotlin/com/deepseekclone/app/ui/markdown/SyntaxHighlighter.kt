@@ -18,6 +18,10 @@ object SyntaxHighlighter {
 
     fun highlight(code: String, language: String?, dark: Boolean): AnnotatedString {
         if (code.isBlank()) return AnnotatedString(code)
+        // highlights 库未覆盖的语言（SQL / JSON / YAML / HTML / CSS）走补位高亮
+        if (SupplementalHighlighter.supports(language)) {
+            return SupplementalHighlighter.highlight(code, language!!, dark)
+        }
         val result = runCatching {
             Highlights.Builder()
                 .code(code)

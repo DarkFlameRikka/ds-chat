@@ -38,6 +38,10 @@
 |---|---|
 | ![文件](docs/shots/14-file-pdf.png) | ![检查更新](docs/shots/11-check-update.png) |
 
+| SQL / JSON 高亮 | YAML / HTML 高亮 |
+|---|---|
+| ![SQL](docs/shots/15-sql-json.png) | ![YAML](docs/shots/16-yaml-html.png) |
+
 ---
 
 ## 功能
@@ -92,7 +96,8 @@
 Kotlin 2.0.21 · Jetpack Compose（BOM 2024.10）· Material 3 · Navigation Compose ·
 OkHttp + kotlinx.serialization（SSE 流式）· DataStore · AGP 8.7 / Gradle 8.9 · minSdk 26
 
-第三方库：`dev.snipme:highlights`（Apache-2.0，代码语法高亮）、`jlatexmath-android`（GPLv2，LaTeX 渲染）
+第三方库：`dev.snipme:highlights`（Apache-2.0，代码语法高亮）、`jlatexmath-android`（GPLv2，LaTeX 渲染）；
+SQL / JSON / YAML / HTML / XML / CSS 由内置补位高亮器覆盖（配色复用 highlights 主题）
 
 协议按官方 [chat-demo](https://github.com/deepseek-ai/chat-demo) 对齐：Anthropic 兼容 Messages API、
 Files API、ASR / TTS 独立接口。
@@ -125,7 +130,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 - 无账号体系、无多端同步；数据只存在本机
 - 联网搜索 / 语音 / 文件解析走开放 API，会按次/按时长计费，请注意余额
 - 公式渲染依赖 jlatexmath（GPLv2），本仓库源码公开以符合其分发要求；复杂宏包（如 tikz、amsmath 的部分环境）不支持
-- 语法高亮由 highlights 库提供语言集决定，SQL / JSON / YAML / HTML 等暂不高亮（库不支持，显示为等宽纯文本）
+- 语法高亮除 highlights 库的编程语言外，SQL / JSON / YAML / HTML / XML / CSS 由内置补位高亮器覆盖（常量着色，不做语法解析）
 - 历史导入支持官方导出格式 `export_format_version = 3`；消息分支、编辑历史等不回放
 - 缓存命中率在短对话下常为 0.0%（服务端缓存有最小前缀粒度）
 
