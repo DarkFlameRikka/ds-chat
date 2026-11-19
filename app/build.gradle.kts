@@ -14,8 +14,8 @@ android {
         applicationId = "com.deepseekclone.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2.0"
+        versionCode = 4
+        versionName = "1.2.1"
     }
 
     buildTypes {
@@ -58,6 +58,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+    // 代码语法高亮（Kotlin Multiplatform，Apache-2.0，mikepenz markdown 渲染器同款）
+    implementation("dev.snipme:highlights:1.0.0")
     // LaTeX 公式渲染（jlatexmath 的 Android 移植，GPLv2；本仓库源码公开）
     implementation("ru.noties:jlatexmath-android:0.2.0")
 
