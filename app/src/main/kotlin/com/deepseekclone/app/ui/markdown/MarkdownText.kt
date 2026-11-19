@@ -197,7 +197,7 @@ private fun MathBlock(latex: String) {
  */
 @Composable
 private fun RichText(text: String, style: TextStyle) {
-    if (!text.contains('$')) {
+    if (!text.contains('$') && !text.contains("\\(")) {
         Text(text = inline(text), style = style)
         return
     }
@@ -439,6 +439,51 @@ private fun buildInline(text: String, linkColor: Color, codeBg: Color): Annotate
     }
 }
 
+/** 解码模型偶尔输出的 HTML 实体（&#128176; / &amp; 等，允许双重转义）。 */
+private fun decodeHtmlEntities(text: String): String {
+    var current = text
+    repeat(3) {
+        val next = decodeOnce(current)
+        if (next == current) return current
+        current = next
+    }
+    return current
+}
+
+private fun decodeOnce(text: String): String {
+    if (!text.contains('&')) return text
+    val named = mapOf(
+        "amp" to "&", "lt" to "<", "gt" to ">", "quot" to "\"", "apos" to "'", "nbsp" to " ",
+        "hellip" to "…", "mdash" to "—", "ndash" to "–", "middot" to "·",
+    )
+    val sb = StringBuilder(text.length)
+    var i = 0
+    while (i < text.length) {
+        val c = text[i]
+        if (c == '&') {
+            val end = text.indexOf(';', i + 1)
+            if (end in (i + 2)..(i + 10)) {
+                val entity = text.substring(i + 1, end)
+                val decoded = when {
+                    entity.startsWith("#x") || entity.startsWith("#X") ->
+                        entity.drop(2).toIntOrNull(16)?.let { cp -> if (cp in 1..0x10FFFF) String(Character.toChars(cp)) else null }
+                    entity.startsWith("#") ->
+                        entity.drop(1).toIntOrNull()?.let { cp -> if (cp in 1..0x10FFFF) String(Character.toChars(cp)) else null }
+                    else -> named[entity]
+                }
+                if (decoded != null) {
+                    sb.append(decoded)
+                    i = end + 1
+                    continue
+                }
+            }
+        }
+        sb.append(c)
+        i++
+    }
+    return sb.toString()
+}
+
 private sealed interface MdBlock {
     data class Heading(val level: Int, val text: String) : MdBlock
     data class Paragraph(val text: String) : MdBlock
@@ -462,12 +507,13 @@ private fun plainTextOf(block: MdBlock): String = when (block) {
 
 private val inlineMathMarker = Regex("^\\$\\$(.+)\\$\\$$")
 private val blockMathStart = Regex("^\\$\\$")
-private val bracketMathStart = Regex("^\\\\\\\\\\[")
-private val bracketMathEnd = Regex("\\\\\\\\\\]$")
+private val bracketMathStart = Regex("""^\\\[""")
+private val bracketMathEnd = Regex("""\\\]$""")
+private val bracketMathInline = Regex("""^\\\[(.+)\\\]$""")
 
 private fun parseBlocks(source: String): List<MdBlock> {
     val blocks = mutableListOf<MdBlock>()
-    val lines = source.replace("\r\n", "\n").split("\n")
+    val lines = decodeHtmlEntities(source).replace("\r\n", "\n").split("\n")
     var i = 0
     while (i < lines.size) {
         val line = lines[i]
@@ -485,6 +531,13 @@ private fun parseBlocks(source: String): List<MdBlock> {
                 }
                 i++
                 blocks += MdBlock.Code(lang, code.toString().trimEnd('\n'))
+            }
+
+            // 单行 \[ ... \]
+            bracketMathInline.matches(trimmed) -> {
+                val latex = bracketMathInline.matchEntire(trimmed)!!.groupValues[1].trim()
+                blocks += MdBlock.Math(latex)
+                i++
             }
 
             // 单行 $$...$$
@@ -547,7 +600,7 @@ private fun parseBlocks(source: String): List<MdBlock> {
                     val next = lines[i].trim()
                     if (next.isEmpty() || next.startsWith("```") || next.startsWith("#") ||
                         next.startsWith(">") || next.startsWith("- ") || next.startsWith("* ") ||
-                        next.startsWith("$$")
+                        next.startsWith("$$") || next.startsWith("\\[")
                     ) break
                     sb.append('\n').append(next)
                     i++

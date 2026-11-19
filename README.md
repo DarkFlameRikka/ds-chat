@@ -30,9 +30,13 @@
 |---|---|
 | ![教程](docs/shots/09-api-key-guide.png) | ![侧边栏](docs/shots/10-sidebar.png) |
 
-| 代码高亮 + LaTeX 公式 | 检查更新 |
+| 代码高亮 + LaTeX 公式 | 联网搜索与引用 |
 |---|---|
-| ![渲染](docs/shots/12-syntax-math.png) | ![检查更新](docs/shots/11-check-update.png) |
+| ![渲染](docs/shots/12-syntax-math.png) | ![搜索](docs/shots/13-search.png) |
+
+| PDF / 文件输入 | 检查更新 |
+|---|---|
+| ![文件](docs/shots/14-file-pdf.png) | ![检查更新](docs/shots/11-check-update.png) |
 
 ---
 
